@@ -56,33 +56,33 @@
         path: "{{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/cek.iso"
         state: absent
 
-    - name: Generate cloud-init user-data
-      template:
-        src: user-data.j2
-        dest: "{{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/user-data"
-        mode: 0644
+#    - name: Generate cloud-init user-data
+#      template:
+#        src: user-data.j2
+#        dest: "{{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/user-data"
+#        mode: 0644
+#
+#    - name: Generate cloud-init meta-data
+#      template:
+#        src: meta-data.j2
+#        dest: "{{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/meta-data"
+#        mode: 0644
 
-    - name: Generate cloud-init meta-data
-      template:
-        src: meta-data.j2
-        dest: "{{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/meta-data"
-        mode: 0644
-
-    - name: Create disk images for VMs
-      command: >
-        qemu-img create -f qcow2 -F qcow2 -o backing_file={{ vm_project_root_dir }}/{{ vm_image }}
-        {{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/cek.qcow2 256G
-      changed_when: true
-
-    - name: Create config images for VMs
-      command: >
-        genisoimage -output {{ vm_project_root_dir }}//{{ vm.type }}/{{ vm.name }}/cek.iso -volid cidata -joliet
-        -rock {{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/meta-data {{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/user-data
-      changed_when: true
-  when:
-    - (not vm.name in current_vms.stdout) or
-      vm_recreate_existing | default(true)
-
+#    - name: Create disk images for VMs
+#      command: >
+#        qemu-img create -f qcow2 -F qcow2 -o backing_file={{ vm_project_root_dir }}/{{ vm_image }}
+#        {{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/cek.qcow2 256G
+#      changed_when: true
+#
+#    - name: Create config images for VMs
+#      command: >
+#        genisoimage -output {{ vm_project_root_dir }}//{{ vm.type }}/{{ vm.name }}/cek.iso -volid cidata -joliet
+#        -rock {{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/meta-data {{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/user-data
+#      changed_when: true
+#  when:
+#    - (not vm.name in current_vms.stdout) or
+#      vm_recreate_existing | default(true)
+#
 - name: Current VM - {{ vm.name }}
   debug:
     msg: "Current VM - {{ vm.name }} was not changed"

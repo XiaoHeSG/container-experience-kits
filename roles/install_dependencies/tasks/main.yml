@@ -14,10 +14,10 @@
 ##   limitations under the License.
 ##
 ---
-- name: refresh repository cache
-  apt:
-    update_cache: yes
-  when: ansible_os_family == 'Debian'
+#- name: refresh repository cache
+#  apt:
+#    update_cache: yes
+#  when: ansible_os_family == 'Debian'
 
 - name: install packages
   action: "{{ ansible_pkg_mgr }} \

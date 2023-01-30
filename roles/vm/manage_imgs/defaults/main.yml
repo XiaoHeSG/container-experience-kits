@@ -20,7 +20,7 @@ vm_project_root_dir: "{{ (project_root_dir, 'vm') | path_join }}"
 vm_image_distribution: "ubuntu"
 
 # VM image for Ubuntu - default version 20.04
-vm_image_version_ubuntu: "20.04"
+vm_image_version_ubuntu: "22.04"
 
 # VM image for Rocky - default version 8.5
 vm_image_version_rocky: "8.5"

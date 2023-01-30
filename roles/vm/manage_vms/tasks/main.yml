@@ -14,14 +14,15 @@
 ##   limitations under the License.
 ##
 ---
-- name: Allocate cpus in case it's not done already by isolcpus
-  include_role:
-    name: bootstrap/allocate_cpus
-  when:
-    - isolcpus_cpus_total is not defined and not isolcpus_cpus_total
+#- name: Allocate cpus in case it's not done already by isolcpus
+#  include_role:
+#    name: bootstrap/allocate_cpus
+#  when:
+#    - isolcpus_cpus_total is not defined and not isolcpus_cpus_total
 
 - name: Start VMs
-  include: start_vm.yml
-  loop: "{{ cpupin_vms | default([]) }}"
+  include_tasks: start_vm.yml
+  #loop: "{{ cpupin_vms | default([]) }}"
+  loop: "{{ vms }}"
   loop_control:
     loop_var: vm

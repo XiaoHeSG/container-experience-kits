@@ -24,19 +24,25 @@
           --cpu host
           --ram {{ vm.memory }}
           --vcpus={{ vm.cpu_total }},sockets=1,cores={{ (vm.cpu_total / 2) | int }},threads=2
-          --cpuset={{ vm.cpus }}
           --os-variant {{ vm_os_variant }}
-          --disk path={{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/cek.qcow2,format=qcow2
-          --disk {{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/cek.iso,device=cdrom
-          --network network=vm-default,model=virtio
+          --disk path={{ vm_project_root_dir }}/ubuntu-22.04.1-desktop-amd64-215-custom.qcow2,format=qcow2
+          --disk {{ vm_project_root_dir }}/ubuntu-22.04.1-desktop-amd64-215-custom.iso,device=cdrom
           {%- if vm.type == "work" %}
           {%- for pci in vm.pci %}
           --hostdev {{ pci }},address.type=pci
           {%- endfor -%}
           {%- endif %}
-          --network network=vxlanbr{{ vm.vxlan }},model=virtio
+          --graphics vnc,listen=0.0.0.0
           --import --noautoconsole
+          --boot uefi
+      #    --network network=vm-default,model=virtio
+      #    --network network=vxlanbr{{ vm.vxlan }},model=virtio
+      #    --cpuset={{ vm.cpus }}
+      #    --disk path={{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/ubuntu-22.04.1-desktop-amd64-215-custom.qcow2,format=qcow2
+      #    --disk {{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/ubuntu-22.04.1-desktop-amd64-215-custom.iso,device=cdrom
       changed_when: true
+
+    - debug: msg="using virt-install command {{ vm.name }} {{ vm.memory }} {{ vm.cpu_total }} {{ vm.cpu_total }}"
 
     - name: Make VM persistent accross VM host reboot - {{ vm.name }}
       command: virsh autostart {{ vm.name }}

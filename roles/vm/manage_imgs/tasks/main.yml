@@ -16,7 +16,7 @@
 ---
 - name: Generate VM image vars
   template:
-    src: vm_image_vars.yml.j2
+    src: vm_image_vars_ifpd.yml.j2
     dest: "vm_image_vars.yml"
     mode: 0644
   delegate_to: localhost
@@ -27,7 +27,7 @@
 
 - name: Generate VM image links vars
   template:
-    src: vm_image_links_vars.yml.j2
+    src: vm_image_links_vars_ifpd.yml.j2
     dest: "vm_image_links_vars.yml"
     mode: 0644
   delegate_to: localhost
@@ -55,33 +55,33 @@
   register: vm_image_downloaded
 
 - block:
-    - name: download vm_image checksums file
-      get_url:
-        url: "{{ vm_image_checksums }}"
-        dest: "{{ vm_project_root_dir }}/{{ vm_image }}.checksums"
-        mode: 0440
-        force: yes
-      register: result_sum
-      retries: "{{ number_of_retries | default(5) }}"
-      until: result_sum is succeeded
-      delay: "{{ retry_delay | default(3) }}"
-      environment:
-        http_proxy: "{{ http_proxy }}"
-        https_proxy: "{{ https_proxy }}"
-
-    - name: extract checksum for requested image
-      shell: set -o pipefail && cat "{{ vm_project_root_dir }}/{{ vm_image }}.checksums" | grep "{{ vm_image }}" | cut "{{ vm_image_checksum_cut_line }}" -d' '
-      args:
-        executable: /bin/bash
-      register: vm_image_checksum
-      changed_when: false
+    #- name: download vm_image checksums file
+    #  get_url:
+    #    url: "{{ vm_image_checksums }}"
+    #    dest: "{{ vm_project_root_dir }}/{{ vm_image }}.checksums"
+    #    mode: 0440
+    #    force: yes
+    #  register: result_sum
+    #  retries: "{{ number_of_retries | default(5) }}"
+    #  until: result_sum is succeeded
+    #  delay: "{{ retry_delay | default(3) }}"
+    #  environment:
+    #    http_proxy: "{{ http_proxy }}"
+    #    https_proxy: "{{ https_proxy }}"
+#
+    #- name: extract checksum for requested image
+    #  shell: set -o pipefail && cat "{{ vm_project_root_dir }}/{{ vm_image }}.checksums" | grep "{{ vm_image }}" | cut "{{ vm_image_checksum_cut_line }}" -d' '
+    #  args:
+    #    executable: /bin/bash
+    #  register: vm_image_checksum
+    #  changed_when: false
 
     - name: download vm_image file
       get_url:
         url: "{{ vm_image_url }}"
         dest: "{{ vm_project_root_dir }}/{{ vm_image }}"
         mode: 0440
-        checksum: "{{ vm_image_checksum_type }}:{{ vm_image_checksum.stdout }}"
+        #checksum: "{{ vm_image_checksum_type }}:{{ vm_image_checksum.stdout }}"
       register: result
       retries: "{{ number_of_retries | default(5) }}"
       until: result is succeeded
