@@ -1,0 +1,79 @@
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+  <name>Ubuntu_VM</name>
+  <memory unit='KiB'>4194304</memory>
+  <currentMemory unit='KiB'>4194304</currentMemory>
+  <memoryBacking>
+    <hugepages>
+      <page size='2048' unit='KiB'/>
+    </hugepages>
+    <nosharepages/>
+    <source type='memfd'/>
+    <access mode='shared'/>
+    <allocation mode='immediate'/>
+  </memoryBacking>
+  <vcpu placement='static'>6</vcpu>
+  <cputune>
+    <emulatorpin cpuset='2-7'/>
+  </cputune>
+  <os>
+    <type arch='x86_64' machine='pc-q35-6.0'>hvm</type>
+    <loader readonly='yes' type='pflash'>/usr/share/OVMF/OVMF_CODE_4M.fd</loader>
+    <nvram>/var/lib/libvirt/qemu/nvram/Ubuntu_VM_VARS.fd</nvram>
+    <boot dev='hd'/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <vmport state='off'/>
+  </features>
+  <cpu mode='host-model' check='partial'/>
+  <clock offset='utc'>
+    <timer name='rtc' tickpolicy='catchup'/>
+    <timer name='pit' tickpolicy='delay'/>
+    <timer name='hpet' present='no'/>
+  </clock>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <pm>
+    <suspend-to-mem enabled='no'/>
+    <suspend-to-disk enabled='no'/>
+  </pm>
+  <interface type='network'>
+     <source network='default'/>
+  </interface>
+  <devices>
+    <emulator>/usr/bin/qemu-system-x86_64</emulator>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' cache='none'/>
+      <source file='/opt/cek/vm/ubuntu-22.04.1-desktop-amd64-232-custom.qcow2'/>
+      <target dev='vda' bus='virtio'/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
+    </disk>
+    <controller type='virtio-serial' index='0'>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x00' function='0x0'/>
+    </controller>
+    <controller type='usb' index='0' model='qemu-xhci' ports='15'>
+      <address type='pci' domain='0x0000' bus='0x04' slot='0x00' function='0x0'/>
+    </controller>
+    <console type='pty'>
+      <target type='virtio' port='0'/>
+    </console>
+    <input type='mouse' bus='ps2'/>
+    <input type='keyboard' bus='ps2'/>
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <source>
+        <address domain='0x0000' bus='0x00' slot='0x02' function='0x2'/>
+      </source>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>
+    </hostdev>
+  </devices>
+  <qemu:commandline>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='virtio-vga,blob=true'/>
+    <qemu:arg value='-display'/>
+    <qemu:arg value='gtk,gl=on'/>
+    <qemu:env name='DISPLAY' value=':0'/>
+  </qemu:commandline>
+</domain>
+

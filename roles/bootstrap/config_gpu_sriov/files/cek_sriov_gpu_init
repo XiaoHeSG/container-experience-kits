@@ -1,0 +1,25 @@
+#!/bin/bash
+
+export DISPLAY=:0; xhost +;
+
+vendor=$(cat /sys/bus/pci/devices/0000:00:02.0/vendor)
+device=$(cat /sys/bus/pci/devices/0000:00:02.0/device)
+NUMVFS=2
+sudo modprobe i2c-algo-bit
+sudo modprobe video
+echo '0' | sudo tee -a /sys/bus/pci/devices/0000\:00\:02.0/sriov_drivers_autoprobe
+echo $NUMVFS | sudo tee -a /sys/class/drm/card0/device/sriov_numvfs
+echo '1' | sudo tee -a /sys/bus/pci/devices/0000\:00\:02.0/sriov_drivers_autoprobe
+sudo modprobe vfio-pci
+echo "$vendor $device" | sudo tee -a /sys/bus/pci/drivers/vfio-pci/new_id
+
+# 1Gbyte hugepage size is used and configured only by boot cmdline
+echo 8192 | sudo tee /proc/sys/vm/nr_hugepages
+
+vfschedexecq=25
+vfschedtimeout=500000
+for (( i = 1; i <= $NUMVFS; i++ ))
+do
+    echo $vfschedexecq | sudo tee -a /sys/class/drm/card0/iov/vf$i/gt/exec_quantum_ms
+    echo $vfschedtimeout | sudo tee -a /sys/class/drm/card0/iov/vf$i/gt/preempt_timeout_us
+done

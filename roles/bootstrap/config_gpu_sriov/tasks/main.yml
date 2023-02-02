@@ -1,0 +1,8 @@
+- name: copy GPU SRIOV setup script to /usr/local/bin
+  copy:
+    src: "{{ role_path }}/files/cek_sriov_gpu_init"
+    dest: /usr/local/bin/cek_sriov_gpu_init
+    owner: root
+    group: root
+    mode: '0700'
+  become: yes

@@ -14,6 +14,95 @@
 ##   limitations under the License.
 ##
 ---
+#- name: check if {{ vm.vm_image_destination_file }} is already downloaded
+#  stat:
+#    path: "{{ vm.vm_image_destination_file }}"
+#  register: vm_image_downloaded
+- name: get the corresponding image in vm_image_links_vars
+  set_fact:
+    vm_link: "{{ item }}"
+  when: item.vm_name == vm.name
+  loop: "{{ vms_links }}"
+
+- name: get download file full name
+  set_fact:
+    download_file_name: "{{ vm_link.vm_image_url | split('/') | last }}"
+
+- name: get download file extenstion
+  set_fact:
+    download_file_extension: "{{ download_file_name | split('.') | last }}"
+
+- name: check if {{ vm_link.vm_image_destination_file }} is already downloaded
+  stat:
+    path: "{{ vm_link.vm_image_destination_file }}"
+  register: vm_image_downloaded
+
+- block:
+    - name: download vm_image checksums file
+      get_url:
+        url: "{{ vm_image_checksums }}"
+        dest: "{{ vm_project_root_dir }}/{{ vm_image }}.checksums"
+        mode: 0440
+        force: yes
+      register: result_sum
+      retries: "{{ number_of_retries | default(5) }}"
+      until: result_sum is succeeded
+      delay: "{{ retry_delay | default(3) }}"
+      environment:
+        http_proxy: "{{ http_proxy }}"
+        https_proxy: "{{ https_proxy }}"
+
+    - name: extract checksum for requested image
+      shell: set -o pipefail && cat "{{ vm_project_root_dir }}/{{ vm_image }}.checksums" | grep "{{ vm_image }}" | cut "{{ vm_image_checksum_cut_line }}" -d' '
+      args:
+        executable: /bin/bash
+      register: vm_image_checksum
+      changed_when: false
+
+    - name: download vm_image file
+      get_url:
+        url: "{{ vm_image_url }}"
+        dest: "{{ vm_project_root_dir }}/{{ vm_image }}"
+        mode: 0440
+        checksum: "{{ vm_image_checksum_type }}:{{ vm_image_checksum.stdout }}"
+      register: result
+      retries: "{{ number_of_retries | default(5) }}"
+      until: result is succeeded
+      delay: "{{ retry_delay | default(3) }}"
+      environment:
+        http_proxy: "{{ http_proxy }}"
+        https_proxy: "{{ https_proxy }}"
+  when: not vm_image_downloaded.stat.exists and profile_name != 'ifpd'
+
+- name: download vm_image file
+  get_url:
+    url: "{{ vm_link.vm_image_url }}"
+    dest: "{{ vm_project_root_dir }}/{{ download_file_name }}"
+    mode: 0440
+  register: result
+  retries: "{{ number_of_retries | default(5) }}"
+  until: result is succeeded
+  delay: "{{ retry_delay | default(3) }}"
+  when: not vm_image_downloaded.stat.exists and profile_name == 'ifpd'
+
+- block:  
+    - name: Decompress vm image if needed
+      shell: "bzip2 -kd '{{ vm_project_root_dir }}/{{ download_file_name }}'"
+      args:
+        executable: /bin/bash
+      when: download_file_extension == "bz2"
+  when: not vm_image_downloaded.stat.exists and download_file_extension != "qcow2" 
+
+- name: Register vm_image path
+  stat:
+    path: "{{ vm_project_root_dir }}/{{ vm_link.vm_image }}"
+  register: img
+
+- name: Check that OS vm_image exists
+  fail:
+    msg: "Image not found in playbook directory"
+  when: not img.stat.exists
+
 - name: Check VM status - {{ vm.name }}
   command: virsh list
   register: current_vms
@@ -31,20 +120,20 @@
         mode: 0700
         recurse: yes
 
-#    - name: Destroy VMs if changing state
-#      command: virsh destroy {{ vm.name }}
-#      changed_when: true
-#      register: destroy_result
-#      failed_when: (destroy_result.stderr != '') and
-#        (('domain is not running' not in destroy_result.stderr) and
-#        ('failed to get domain' not in destroy_result.stderr))
-#
-#    - name: Undefine VMs if changing state
-#      command: virsh undefine {{ vm.name }}
-#      changed_when: true
-#      register: undefine_result
-#      failed_when: (undefine_result.stderr != '') and
-#        ('failed to get domain' not in undefine_result.stderr)
+    - name: Destroy VMs if changing state
+      command: virsh destroy {{ vm.name }}
+      changed_when: true
+      register: destroy_result
+      failed_when: (destroy_result.stderr != '') and
+        (('domain is not running' not in destroy_result.stderr) and
+        ('failed to get domain' not in destroy_result.stderr))
+
+    - name: Undefine VMs if changing state
+      command: virsh undefine {{ vm.name }}
+      changed_when: true
+      register: undefine_result
+      failed_when: (undefine_result.stderr != '') and
+        ('failed to get domain' not in undefine_result.stderr)
 
     - name: Remove VM disk images if changing state
       file:
@@ -56,33 +145,33 @@
         path: "{{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/cek.iso"
         state: absent
 
-#    - name: Generate cloud-init user-data
-#      template:
-#        src: user-data.j2
-#        dest: "{{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/user-data"
-#        mode: 0644
-#
-#    - name: Generate cloud-init meta-data
-#      template:
-#        src: meta-data.j2
-#        dest: "{{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/meta-data"
-#        mode: 0644
+    - name: Generate cloud-init user-data
+      template:
+        src: user-data.j2
+        dest: "{{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/user-data"
+        mode: 0644
 
-#    - name: Create disk images for VMs
-#      command: >
-#        qemu-img create -f qcow2 -F qcow2 -o backing_file={{ vm_project_root_dir }}/{{ vm_image }}
-#        {{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/cek.qcow2 256G
-#      changed_when: true
-#
-#    - name: Create config images for VMs
-#      command: >
-#        genisoimage -output {{ vm_project_root_dir }}//{{ vm.type }}/{{ vm.name }}/cek.iso -volid cidata -joliet
-#        -rock {{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/meta-data {{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/user-data
-#      changed_when: true
-#  when:
-#    - (not vm.name in current_vms.stdout) or
-#      vm_recreate_existing | default(true)
-#
+    - name: Generate cloud-init meta-data
+      template:
+        src: meta-data.j2
+        dest: "{{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/meta-data"
+        mode: 0644
+    - name: Create disk images for VMs
+      command: >
+        qemu-img create -f qcow2 -F qcow2 -o backing_file={{ vm_project_root_dir }}/{{ vm_image }}
+        {{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/cek.qcow2 256G
+      changed_when: true
+
+    - name: Create config images for VMs
+      command: >
+        genisoimage -output {{ vm_project_root_dir }}//{{ vm.type }}/{{ vm.name }}/cek.iso -volid cidata -joliet
+        -rock {{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/meta-data {{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/user-data
+      changed_when: true
+  when:
+    - (not vm.name in current_vms.stdout) or
+      vm_recreate_existing | default(true) 
+    - profile_name != 'ifpd'
+
 - name: Current VM - {{ vm.name }}
   debug:
     msg: "Current VM - {{ vm.name }} was not changed"

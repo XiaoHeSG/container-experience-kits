@@ -4,6 +4,7 @@
   when: preflight_enabled | default(true) | bool
 - name: configure target hosts OS layer
   import_playbook: infra/{{ playbook_name }}.yml
+{%- if playbook_name not in ['ifpd'] %}
 - name: deploy container runtime
   import_playbook: infra/container_runtime_deployment.yml
   when: not kubernetes | default(true) and container_runtime_only_deployment | default(false)
@@ -16,3 +17,4 @@
 - name: run post deployment hooks
   import_playbook: k8s/post_deployment_hooks.yml
   when: post_deployment_hook_enabled | default(false)
+{%- endif %}

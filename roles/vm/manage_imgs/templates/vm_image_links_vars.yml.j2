@@ -1,30 +1,49 @@
 ---
-{% if vm_image_distribution == "ubuntu" %}
-{% if vm_image_version_ubuntu == "22.04" %}
-
-vm_image_url: "https://cloud-images.ubuntu.com/jammy/current/{{ vm_image }}"
-vm_image_checksums: "https://cloud-images.ubuntu.com/jammy/current/MD5SUMS"
-
-{% else %}
-
-vm_image_url: "https://cloud-images.ubuntu.com/releases/{{ vm_image_version_ubuntu }}/release/{{ vm_image }}"
-vm_image_checksums: "https://cloud-images.ubuntu.com/releases/{{ vm_image_version_ubuntu }}/release/MD5SUMS"
-
+vms_links:
+{% for vm in vms %}
+{% if profile_name == "ifpd" %}
+{% if vm.image_distribution|lower == "ubuntu" %}
+  -  vm_image_url: "https://af01p-png.devtools.intel.com/artifactory/hspe-edge-png-local/ubuntu-adl/20230127-2341/default/ubuntu-22.04.1-desktop-amd64-232-custom.qcow2"
+     vm_image: "ubuntu-22.04.1-desktop-amd64-232-custom.qcow2"
+     {% set vm_image="ubuntu-22.04.1-desktop-amd64-232-custom.qcow2" %}
+{% elif vm.image_distribution|lower == "windows" %}
+  -  vm_image_url: "https://af01p-png.devtools.intel.com/artifactory/hspe-edge-png-local/common-vms/windows/ADLN_Windows_WW50_1.qcow2.bz2"
+     vm_image: "ADLN_Windows_WW50_1.qcow2"
+     {% set vm_image="ADLN_Windows_WW50_1.qcow2" %}
+{% elif vm.image_distribution == "android" %}
+  -  vm_image_url: "https://af01p-png.devtools.intel.com/artifactory/hspe-edge-png-local/common-vms/adln_android/android_ww2302.qcow2.bz2"
+     vm_image: "android_ww2302.qcow2"
 {% endif %}
-
-{% elif vm_image_distribution == "rocky" %}
+{% else %}
+{% if vm.image_distribution|lower == "ubuntu" %}
+{% if vm.image_version_ubuntu == "22.04" %}
+  -  vm_image: "jammy-server-cloudimg-amd64.img"
+     vm_image_url: "https://cloud-images.ubuntu.com/jammy/current/{{ vm_image }}"
+     vm_image_checksums: "https://cloud-images.ubuntu.com/jammy/current/MD5SUMS"
+{% else %}
+  -  vm_image: "ubuntu-{{ vm_image_version_ubuntu }}-server-cloudimg-amd64.img"
+     vm_image_url: "https://cloud-images.ubuntu.com/releases/{{ vm_image_version_ubuntu }}/release/{{ vm_image }}"
+     vm_image_checksums: "https://cloud-images.ubuntu.com/releases/{{ vm_image_version_ubuntu }}/release/MD5SUMS"
+{% endif %}
+     vm_image_checksum_type: "md5"
+     vm_image_checksum_cut_line: "-f1"
+     vm_os_variant: "ubuntu20.04"
+{% elif vm.image_distribution|lower == "rocky" %}
+  - vm_image_checksum_type: "sha256"
+    vm_image_checksum_cut_line: "-f4"
 {% if vm_image_version_rocky == "9.0" %}
-
-vm_image_url: "https://dl.rockylinux.org/pub/rocky/9/images/x86_64/{{ vm_image }}"
-vm_image_checksums: "https://dl.rockylinux.org/pub/rocky/9/images/x86_64/CHECKSUM"
-
+    vm_image: "Rocky-9-GenericCloud-{{ vm_image_version_rocky }}-20220830.0.x86_64.qcow2"
+    vm_image_url: "https://dl.rockylinux.org/pub/rocky/9/images/x86_64/{{ vm_image }}"
+    vm_image_checksums: "https://dl.rockylinux.org/pub/rocky/9/images/x86_64/CHECKSUM"
+    vm_os_variant: "rocky9.0"
 {% else %}
-
-vm_image_url: "https://dl.rockylinux.org/vault/rocky/{{ vm_image_version_rocky }}/images/{{ vm_image }}"
-vm_image_checksums: "https://dl.rockylinux.org/vault/rocky/{{ vm_image_version_rocky }}/images/CHECKSUM"
-
+    vm_image: "Rocky-8-GenericCloud-{{ vm_image_version_rocky }}-20211114.2.x86_64.qcow2"
+    vm_image_url: "https://dl.rockylinux.org/vault/rocky/{{ vm_image_version_rocky }}/images/{{ vm_image }}"
+    vm_image_checksums: "https://dl.rockylinux.org/vault/rocky/{{ vm_image_version_rocky }}/images/CHECKSUM"
+    vm_os_variant: "rocky8.5"
 {% endif %}
-
 {% endif %}
-
-vm_image_destination_file: "{{ vm_project_root_dir }}/{{ vm_image }}"
+{% endif %}
+vm_name: "{{vm.name}}"
+     vm_image_destination_file: "{{ vm_project_root_dir }}/{{vm_image}}"
+{% endfor %}

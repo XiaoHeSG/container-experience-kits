@@ -1,4 +1,5 @@
 ---
+{%- if playbook_name not in ['ifpd'] %}
 # apply common cluster node configuration
 - hosts: k8s_cluster,vm_host
   tasks: []
@@ -273,3 +274,34 @@
   roles: []
   environment: "{{ '{{' }} proxy_env | d({}) {{ '}}' }}"
   any_errors_fatal: true
+
+{% else %}
+
+# apply ifpd vm host configuration
+- hosts: vm_host
+  tasks: []
+  pre_tasks:
+    - name: End play for VM host
+      meta: end_host
+      when:
+        - "'vm_host' in group_names"
+        - on_vms | default(false) | bool
+  handlers:
+    - name: reboot server
+      reboot: { reboot_timeout: 1200 }
+  roles:
+    - role: bootstrap/configure_proxy
+    - role: bootstrap/install_packages
+    - role: bootstrap/update_grub
+      when: update_kernel | default(false) | bool
+    - role: bootstrap/configure_additional_grub_parameters
+      tags: grub-extra-params
+    - role: bootstrap/configure_security
+    - role: bootstrap/configure_dns
+      when:
+        - ansible_distribution == "Ubuntu" and dns_disable_stub_listener | default(true) | bool
+        - not vm_enabled or on_vms | default(false) | bool
+    - role: bootstrap/config_gpu_sriov
+  environment: "{{ '{{' }} proxy_env | d({}) {{ '}}' }}"
+  any_errors_fatal: true
+  {%- endif %}

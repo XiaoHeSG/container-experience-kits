@@ -14,11 +14,21 @@
 ##   limitations under the License.
 ##
 ---
-#- name: Allocate cpus in case it's not done already by isolcpus
-#  include_role:
-#    name: bootstrap/allocate_cpus
-#  when:
-#    - isolcpus_cpus_total is not defined and not isolcpus_cpus_total
+- name: Allocate cpus in case it's not done already by isolcpus
+  include_role:
+    name: bootstrap/allocate_cpus
+  when:
+    - isolcpus_cpus_total is not defined and not isolcpus_cpus_total and profile_name != 'ifpd'
+
+- name: copy vm config xmls
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{vm_project_root_dir}}"
+    mode: '0644'
+  loop:
+    - src: files/
+  when:
+    profile_name == 'ifpd'
 
 - name: Start VMs
   include_tasks: start_vm.yml

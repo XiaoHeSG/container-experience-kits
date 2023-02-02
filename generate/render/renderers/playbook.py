@@ -21,7 +21,7 @@ This file contains functions needed for playbooks generation
 import os
 from render.common.common import render
 
-_available_playbooks = ['basic', 'full_nfv', 'access', 'remote_fp', 'regional_dc', 'on_prem', 'storage', 'build_your_own']
+_available_playbooks = ['basic', 'full_nfv', 'access', 'remote_fp', 'regional_dc', 'on_prem', 'storage', 'ifpd','build_your_own']
 _playbook_dir = 'playbooks'
 
 def render_playbooks(profile: str) -> None:
@@ -40,7 +40,6 @@ def _create_playbook(template_name: str, playbook_file: str, jinja_vars: dict, p
     """Creates one playbook"""
     playbook_path = os.path.join(_playbook_dir, playbook_subdir, playbook_file)
     template_path = os.path.join("generate/playbook_templates", template_name)
-
     render(template_path, jinja_vars, playbook_path)
 
 def _create_all_playbooks() -> None:

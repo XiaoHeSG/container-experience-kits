@@ -32,6 +32,8 @@
       when:
         - sgx_dp_enabled | default(false)
     - role: vm/prepare_cek
+      when:
+        - profile_name != 'ifpd'
 
 - hosts: vm_host
   gather_facts: false

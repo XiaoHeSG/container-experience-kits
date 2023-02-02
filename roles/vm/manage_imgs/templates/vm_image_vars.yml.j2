@@ -1,4 +1,21 @@
 ---
+{% if profile_name == "ifpd" %}
+
+{% if vm_image_distribution|lower == "ubuntu" %}
+vm_image_distribution: "{{ vm_image_distribution|lower }}"
+vm_image_version: "{{ vm_image_version_ubuntu }}"
+vm_image: "ubuntu-22.04.1-desktop-amd64-232-custom.qcow2"
+{% elif vm_image_distribution|lower == "windows" %}
+vm_image_distribution: "{{ vm_image_distribution|lower }}"
+vm_image_version: "{{ vm_image_version_windows }}"
+vm_image: "ADLN_Windows_WW50_1.qcow2"
+{% elif vm_image_distribution|lower == "android" %}
+vm_image_distribution: "{{ vm_image_distribution|lower }}"
+vm_image_version: "{{ vm_image_version_android }}"
+vm_image: "android_ww2302.qcow2"
+{% endif %}
+
+{% else %}
 {% if vm_image_distribution|lower == "ubuntu" %}
 vm_image_distribution: "{{ vm_image_distribution|lower }}"
 vm_image_version: "{{ vm_image_version_ubuntu }}"
@@ -21,5 +38,6 @@ vm_os_variant: "rocky9.0"
 {% else %}
 vm_image: "Rocky-8-GenericCloud-{{ vm_image_version_rocky }}-20211114.2.x86_64.qcow2"
 vm_os_variant: "rocky8.5"
+{% endif %}
 {% endif %}
 {% endif %}

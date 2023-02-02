@@ -43,3 +43,6 @@ confirmed_spr_cpus:
   - "8471N"
   - "8490H"
   - "0000%@"
+
+confirmed_adl_cpus:
+  - "12800"

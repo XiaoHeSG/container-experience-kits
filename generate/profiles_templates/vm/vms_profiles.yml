@@ -377,6 +377,38 @@ remote_fp:
     ddp: optional
     fw_update: optional
 
+ifpd:
+  name: ifpd
+  vm_mode: on
+  on_vms: optional
+  nfd: on
+  kube_dashboard: optional
+  isolcpu: optional
+  cpusets: optional
+  topology_manager: on
+  sriov_operator: optional
+  sriov_network_dp: on
+  nic_drivers: optional
+  dpdk: optional
+  cstate: optional
+  ufs: optional
+  telemetry:
+    prometheus: optional
+    collectd: optional
+    telegraf: optional
+  wireguard: optional
+  multus: on
+  firewall: optional
+  cndp: optional
+  cndp_dp: optional
+  cert_manager: on
+  registry: on
+  hugepages: optional
+  intel_ethernet_operator:
+    enabled: optional
+    flow_config: optional
+    fw_update: optional
+
 build_your_own:
   name: build_your_own
   vm_mode: on
