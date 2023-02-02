@@ -110,47 +110,46 @@
   register: net_list
   failed_when: false
 
-#- name: Handle vm-default network
-#  block:
-#    - name: Destroy vm-default network
-#      virt_net:
-#        command: destroy
-#        name: "vm-default"
-#      failed_when: false
-#
-#    - name: Undefine vm-default network
-#      virt_net:
-#        command: undefine
-#        name: "vm-default"
-#      failed_when: false
-#
-#    - name: Read vm-default.xml
-#      command: cat {{ (vm_project_root_dir, 'vm-default.xml') | path_join }}
-#      register: vm_default_xml
-#      changed_when: false
-#
-#    - name: Define vm-default network
-#      virt_net:
-#        command: define
-#        name: "vm-default"
-#        xml: "{{ vm_default_xml.stdout }}"
-#
-#    - name: Start vm-default network
-#      virt_net:
-#        command: start
-#        name: "vm-default"
-#
-#    - name: Autostart vm-default network
-#      virt_net:
-#        autostart: yes
-#        name: "vm-default"
-#  when:
-#    - (not 'vm-default' in net_list.list_nets) or
-#      vm_recreate_existing | default(true)
+- name: Handle vm-default network
+  block:
+    - name: Destroy vm-default network
+      virt_net:
+        command: destroy
+        name: "vm-default"
+      failed_when: false
 
-#- name: Current vm-default network
-#  debug:
-#    msg: "Current vm-default network was not changed"
-#  when:
-#    - ('vm-default' in net_list.list_nets)
-#    - not vm_recreate_existing | default(true)
+    - name: Undefine vm-default network
+      virt_net:
+        command: undefine
+        name: "vm-default"
+      failed_when: false
+
+    - name: Read vm-default.xml
+      command: cat {{ (vm_project_root_dir, 'vm-default.xml') | path_join }}
+      register: vm_default_xml
+      changed_when: false
+
+    - name: Define vm-default network
+      virt_net:
+        command: define
+        name: "vm-default"
+        xml: "{{ vm_default_xml.stdout }}"
+
+    - name: Start vm-default network
+      virt_net:
+        command: start
+        name: "vm-default"
+
+    - name: Autostart vm-default network
+      virt_net:
+        autostart: yes
+        name: "vm-default"
+  when:
+    - (not 'vm-default' in net_list.list_nets) or
+      vm_recreate_existing | default(true)
+- name: Current vm-default network
+  debug:
+    msg: "Current vm-default network was not changed"
+  when:
+    - ('vm-default' in net_list.list_nets)
+    - not vm_recreate_existing | default(true)
