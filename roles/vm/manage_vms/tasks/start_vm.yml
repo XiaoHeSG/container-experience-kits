@@ -14,49 +14,58 @@
 ##   limitations under the License.
 ##
 ---
-- name: Handle VM start
-  block:
-    - name: Start VM - {{ vm.name }}
-      command: >
-        virt-install
-          --connect qemu:///system
-          --name {{ vm.name }}
-          --cpu host
-          --ram {{ vm.memory }}
-          --vcpus={{ vm.cpu_total }},sockets=1,cores={{ (vm.cpu_total / 2) | int }},threads=2
-          --os-variant {{ vm_os_variant }}
-          --disk path={{ vm_project_root_dir }}/ubuntu-22.04.1-desktop-amd64-215-custom.qcow2,format=qcow2
-          --disk {{ vm_project_root_dir }}/ubuntu-22.04.1-desktop-amd64-215-custom.iso,device=cdrom
-          {%- if vm.type == "work" %}
-          {%- for pci in vm.pci %}
-          --hostdev {{ pci }},address.type=pci
-          {%- endfor -%}
-          {%- endif %}
-          --graphics vnc,listen=0.0.0.0
-          --import --noautoconsole
-          --boot uefi
-      #    --network network=vm-default,model=virtio
-      #    --network network=vxlanbr{{ vm.vxlan }},model=virtio
-      #    --cpuset={{ vm.cpus }}
-      #    --disk path={{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/ubuntu-22.04.1-desktop-amd64-215-custom.qcow2,format=qcow2
-      #    --disk {{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/ubuntu-22.04.1-desktop-amd64-215-custom.iso,device=cdrom
-      changed_when: true
+- name: Start {{ vm.name }} VM
+  #command: virsh undefine {{ vm.name }} --nvram
+  command: virsh start {{ vm.name }}
+  changed_when: true
+  register: start_vm_result
 
-    - debug: msg="using virt-install command {{ vm.name }} {{ vm.memory }} {{ vm.cpu_total }} {{ vm.cpu_total }}"
-
-    - name: Make VM persistent accross VM host reboot - {{ vm.name }}
-      command: virsh autostart {{ vm.name }}
-      changed_when: true
-
-    - name: Optimize VM - {{ vm.name }}
-      include_tasks: optimize.yml
-  when:
-    - (not vm.name in current_vms.stdout) or
-      vm_recreate_existing | default(true)
-
-- name: Current VM start - {{ vm.name }}
-  debug:
-    msg: "Current VM - {{ vm.name }} was already running"
-  when:
-    - (vm.name in current_vms.stdout)
-    - not vm_recreate_existing | default(true)
+- name: Debug
+  debug: msg="to start - {{ vm.name }} {{ vm.vxlan }} "
+#- name: Handle VM start
+#  block:
+#    - name: Start VM - {{ vm.name }}
+#      command: >
+#        virt-install
+#          --connect qemu:///system
+#          --name {{ vm.name }}
+#          --cpu host
+#          --ram {{ vm.memory }}
+#          --vcpus={{ vm.cpu_total }},sockets=1,cores={{ (vm.cpu_total / 2) | int }},threads=2
+#          --os-variant {{ vm_os_variant }}
+#          --disk path={{ vm_project_root_dir }}/ubuntu-22.04.1-desktop-amd64-215-custom.qcow2,format=qcow2
+#          --disk {{ vm_project_root_dir }}/ubuntu-22.04.1-desktop-amd64-215-custom.iso,device=cdrom
+#          {%- if vm.type == "work" %}
+#          {%- for pci in vm.pci %}
+#          --hostdev {{ pci }},address.type=pci
+#          {%- endfor -%}
+#          {%- endif %}
+#          --graphics vnc,listen=0.0.0.0
+#          --import --noautoconsole
+#          --boot uefi
+#      #    --network network=vm-default,model=virtio
+#      #    --network network=vxlanbr{{ vm.vxlan }},model=virtio
+#      #    --cpuset={{ vm.cpus }}
+#      #    --disk path={{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/ubuntu-22.04.1-desktop-amd64-215-custom.qcow2,format=qcow2
+#      #    --disk {{ vm_project_root_dir }}/{{ vm.type }}/{{ vm.name }}/ubuntu-22.04.1-desktop-amd64-215-custom.iso,device=cdrom
+#      changed_when: true
+#
+#    - debug: msg="using virt-install command {{ vm.name }} {{ vm.memory }} {{ vm.cpu_total }} {{ vm.cpu_total }}"
+#
+#    - name: Make VM persistent accross VM host reboot - {{ vm.name }}
+#      command: virsh autostart {{ vm.name }}
+#      changed_when: true
+#
+#    - name: Optimize VM - {{ vm.name }}
+#      include_tasks: optimize.yml
+#  when:
+#    - (not vm.name in current_vms.stdout) or
+#      vm_recreate_existing | default(true)
+#
+#- name: Current VM start - {{ vm.name }}
+#  debug:
+#    msg: "Current VM - {{ vm.name }} was already running"
+#  when:
+#    - (vm.name in current_vms.stdout)
+#    - not vm_recreate_existing | default(true)
+#

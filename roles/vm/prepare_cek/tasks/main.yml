@@ -52,21 +52,21 @@
     delay: 1
   with_items: "{{ vm_ips | dict2items }}"
 
-- name: Remove old ECDSA key fingerprint
-  command: ssh-keygen -f "~/.ssh/known_hosts" -R "{{ item.value }}"
-  with_items: "{{ vm_ips | dict2items }}"
-  changed_when: true
-  when:
-    - (not item.key in current_vms.stdout) or
-      vm_recreate_existing | default(true)
-
-- name: Store ECDSA key fingerprint
-  command: ssh -o StrictHostKeyChecking=No {{ item.value }} hostname
-  with_items: "{{ vm_ips | dict2items }}"
-  changed_when: true
-  when:
-    - (not item.key in current_vms.stdout) or
-      vm_recreate_existing | default(true)
+#- name: Remove old ECDSA key fingerprint
+#  command: ssh-keygen -f "~/.ssh/known_hosts" -R "{{ item.value }}"
+#  with_items: "{{ vm_ips | dict2items }}"
+#  changed_when: true
+#  when:
+#    - (not item.key in current_vms.stdout) or
+#      vm_recreate_existing | default(true)
+#
+#- name: Store ECDSA key fingerprint
+#  command: ssh -o StrictHostKeyChecking=No {{ item.value }} hostname
+#  with_items: "{{ vm_ips | dict2items }}"
+#  changed_when: true
+#  when:
+#    - (not item.key in current_vms.stdout) or
+#      vm_recreate_existing | default(true)
 
 - name: Set VM host path
   set_fact:

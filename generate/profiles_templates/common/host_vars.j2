@@ -11,6 +11,7 @@ configured_nic: {{ nic }}
 # Enable IOMMU (required for SR-IOV networking and QAT)
 iommu_enabled: {% if (sriov_operator == 'on' or sriov_network_dp == 'on' or qat == 'on' or dsa == 'on' or dlb == 'on') and on_vms != 'on' %}true{% else %}false{% endif %}
 {% endif %}
+{% if name not in ['ifpd'] %}
 # dataplane interface configuration list
 dataplane_interfaces: []
 {%- if on_vms == 'on' %}
@@ -110,7 +111,7 @@ update_nic_firmware: false # Note: downgrading FW is not recommended, users shou
        # when downgrading only, the recommended below version is required to download the supported NVMupdate64E tool. Users should replace the tool at their own risk.
 #     supported_nvmupdate_tool_pkg_url: "https://downloadmirror.intel.com/738715/E810_NVMUpdatePackage_v4_00_Linux.tar.gz"
 #     supported_nvmupdate_tool_pkg_checksum: "sha1:7C168880082653B579FDF225A2E6E9301C154DD1"
-#     supported_nvmupdate_tool_fw_version: "4.0"  
+#     supported_nvmupdate_tool_fw_version: "4.0"
 {%- endif %}
 {% if ddp in ['on', 'optional'] %}
 # install Intel x700 & x800 series NICs DDP packages
@@ -171,7 +172,7 @@ default_hugepage_size: {% if vpp == 'on' %}2M{% else %}1G{% endif %}
 number_of_hugepages_1G: 4
 number_of_hugepages_2M: 1024
 {% endif %}
-{%- if dlb in ['on', 'optional'] and arch in ['spr'] %} 
+{%- if dlb in ['on', 'optional'] and arch in ['spr'] %}
 # Configure SIOV and Intel DLB devices - required for Intel DLB Device Plugin support
 configure_dlb_devices: {% if dlb == "on" %}true{% else %}false{% endif %}
 {% endif %}
@@ -288,7 +289,7 @@ isolcpus: "4-15"
 {% if vm_mode == 'on' %}
 # isolcpus variable can't be enabled in case of VMRA deployment.
 # Its content is generated automatically.
-# isolcpus: "" 
+# isolcpus: ""
 {%- else %}
 isolcpus: "4-11"
 {% endif %}
@@ -405,9 +406,9 @@ sst_cp_clos_groups: # configure up to 4 CLOS groups
     max_MHz: 25500
 sst_cp_cpu_clos: # assign required values to CLOS group after priority type setup
   - clos: 0      # associating CPUs with a CLOS group such as "clos: 3", update as required.
-    cpus: 2,3,5  # define specific CPUs per CLOS group such as "cpus: 2,6,9", update as required.  
+    cpus: 2,3,5  # define specific CPUs per CLOS group such as "cpus: 2,6,9", update as required.
   - clos: 1
-    cpus: 12     
+    cpus: 12
 
 # Intel(R) SST-TF (feature turbo-freq) configuration for Ice Lake (ICX) Platforms.
 # [true] Enable Intel Speed Select Turbo Frequency (SST-TF)
@@ -665,3 +666,26 @@ minio_pv: []
 #    mountPath: /mnt/data5
 #    device: /dev/nvme5n1
 {% endif -%}
+{% else %}
+dhcp:
+  - 120
+
+# Set hashed password for root user inside VMs. Current value is just placeholder.
+# To create hashed password use e.g.: openssl passwd -6 -salt SaltSalt <your_password>
+vm_hashed_passwd: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+vxlan_device: eno2
+
+vms:
+  - name: "vm-ctrl-1"
+    image_distribution: "ubuntu"
+    cpu_total: 2
+    memory: 4096
+    vxlan: 120
+    type: "ctrl"
+  - name: "vm-work-1"
+    image_distribution: "windows"
+    cpu_total: 2
+    memory: 4096
+    vxlan: 120
+    type: "work"
+{% endif %}

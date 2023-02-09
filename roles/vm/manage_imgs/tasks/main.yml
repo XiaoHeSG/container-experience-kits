@@ -21,7 +21,7 @@
 #    mode: 0644
 #  delegate_to: localhost
 #  when: inventory_hostname == groups['vm_host'][0]
-
+#
 #- name: Include vars for VM image
 #  include_vars: "vm_image_vars.yml"
 
@@ -35,6 +35,30 @@
 
 - name: Include vars for VM image links
   include_vars: "vm_image_links_vars.yml"
+
+- name: Generate vars for starting VM
+  template:
+    src: vm_start_vars.yml.j2
+    dest: "vm_start_vars.yml"
+    mode: 0644
+  delegate_to: localhost
+
+- name: Include vars for starting VM
+  include_vars: "vm_start_vars.yml"
+
+- name: debug vars for starting VM
+  debug: msg="vm_project_root_dir is {{ vm_project_root_dir }}"
+
+- name: Generate XML for VM Definition
+  template:
+    src: "{{ vm_def.vm_domain }}-define.xml.j2"
+    dest: "{{ vm_project_root_dir }}/{{ vm_def.vm_domain }}-define-cek.xml"
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ vms_def }}"
+  loop_control:
+    loop_var: vm_def
 
 - name: Generate SSH keypair if not present
   openssh_keypair:
