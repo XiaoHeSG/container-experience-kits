@@ -5,18 +5,18 @@
       <libosinfo:os id="http://microsoft.com/win/10"/>
     </libosinfo:libosinfo>
   </metadata>
-  <memory>{{ vm_def.memory }}</memory>
-  <currentMemory>{{ vm_def.memory }}</currentMemory>
+  <memory unit="KiB">{{ vm_def.memory }}</memory>
+  <currentMemory unit="KiB">{{ vm_def.memory }}</currentMemory>
   <memoryBacking>
     <hugepages>
-      <page size='{{ vm_def.hugepage_size }}' unit='KiB'/>
+      <page size="{{ vm_def.hugepage_size }}" unit="KiB"/>
     </hugepages>
     <nosharepages/>
-    <source type='memfd'/>
-    <access mode='shared'/>
-    <allocation mode='immediate'/>
+    <source type="memfd"/>
+    <access mode="shared"/>
+    <allocation mode="immediate"/>
   </memoryBacking>
-  <vcpu>4</vcpu>
+  <vcpu placement="static">4</vcpu>
   <os>
     <type arch="x86_64" machine="q35">hvm</type>
     <boot dev="hd"/>
@@ -50,19 +50,19 @@
       <target dev="vda" bus="virtio"/>
     </disk>
     <controller type="usb" model="qemu-xhci" ports="15"/>
-    <hostdev mode='subsystem' type='pci' managed='yes'>
+    <hostdev mode="subsystem" type="pci" managed="yes">
       <source>
-        <address domain='0x0000' bus='0x00' slot='0x02' function='0x{{vm_def.gpu_sriov_func}}'/>
+        <address domain="0x0000" bus="0x00" slot="0x02" function="0x{{ vm_def.gpu_sriov_func }}"/>
       </source>
-      <address type='pci' domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>
+      <address type="pci" domain="0x0000" bus="0x02" slot="0x00" function="0x0"/>
     </hostdev>
-    <interface type='network'>
-      <source network='vm-default'/>
-      <model type='virtio'/>
+    <interface type="network">
+      <source network="vm-default"/>
+      <model type="virtio"/>
     </interface>
-    <interface type='network'>
-      <source network='vxlanbr120'/>
-      <model type='virtio'/>
+    <interface type="network">
+      <source network="vxlanbr120"/>
+      <model type="virtio"/>
     </interface>
     <disk type="file" device="cdrom">
       <driver name="qemu" type="raw"/>
@@ -72,11 +72,11 @@
     </disk>
   </devices>
   <qemu:commandline>
-    <qemu:arg value='-device'/>
-    <qemu:arg value='virtio-vga,max_outputs=1,blob=true'/>
-    <qemu:arg value='-display'/>
-    <qemu:arg value='{{vm_def.virt_display}},gl=on,monitor.0=0'/>
-    <qemu:env name='DISPLAY' value=':0'/>
+    <qemu:arg value="-device"/>
+    <qemu:arg value="virtio-vga,max_outputs=1,blob=true"/>
+    <qemu:arg value="-display"/>
+    <qemu:arg value="{{ vm_def.virt_display }},gl=on,monitor.0=0"/>
+    <qemu:env name="DISPLAY" value=":0"/>
   </qemu:commandline>
 </domain>
 
