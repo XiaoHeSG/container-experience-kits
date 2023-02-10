@@ -1,0 +1,22 @@
+#!/bin/bash
+
+export DISPLAY=:0; xhost +;
+
+vendor=$(cat /sys/bus/pci/devices/0000:00:02.0/vendor)
+device=$(cat /sys/bus/pci/devices/0000:00:02.0/device)
+
+sudo modprobe i2c-algo-bit
+sudo modprobe video
+echo '0' | sudo tee -a /sys/bus/pci/devices/0000\:00\:02.0/sriov_drivers_autoprobe
+echo {{ gpu_numvfs }} | sudo tee -a /sys/class/drm/card0/device/sriov_numvfs
+echo '1' | sudo tee -a /sys/bus/pci/devices/0000\:00\:02.0/sriov_drivers_autoprobe
+sudo modprobe vfio-pci
+echo "$vendor $device" | sudo tee -a /sys/bus/pci/drivers/vfio-pci/new_id
+
+echo {{ nr_hugepages }} | sudo tee /proc/sys/vm/nr_hugepages
+
+for (( i = 1; i <= {{ gpu_numvfs }}; i++ ))
+do
+    echo {{ vfschedexecq }}  | sudo tee -a /sys/class/drm/card0/iov/vf$i/gt/exec_quantum_ms
+    echo {{ vfschedtimeout }} | sudo tee -a /sys/class/drm/card0/iov/vf$i/gt/preempt_timeout_us
+done

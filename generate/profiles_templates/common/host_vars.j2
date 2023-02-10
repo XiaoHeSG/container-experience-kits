@@ -674,18 +674,25 @@ dhcp:
 # To create hashed password use e.g.: openssl passwd -6 -salt SaltSalt <your_password>
 vm_hashed_passwd: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 vxlan_device: eno2
+gpu_numvfs: 2
+vfschedexecq: 25
+vfschedtimeout: 500000
+nr_hugepages: 8192
+hugepage_size: 2048
 
 vms:
   - name: "vm-ctrl-1"
     image_distribution: "ubuntu"
-    cpu_total: 2
-    memory: 4096
+    cpu_total: 6
+    memory: 4194304
+    virt_display: gtk
     vxlan: 120
     type: "ctrl"
   - name: "vm-work-1"
     image_distribution: "windows"
-    cpu_total: 2
-    memory: 4096
+    cpu_total: 4
+    memory: 4194304
+    virt_display: gtk
     vxlan: 120
     type: "work"
 {% endif %}

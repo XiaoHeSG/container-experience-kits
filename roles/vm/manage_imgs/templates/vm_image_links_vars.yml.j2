@@ -5,10 +5,14 @@ vms_links:
 {% if vm.image_distribution|lower == "ubuntu" %}
   -  vm_image_url: "https://af01p-png.devtools.intel.com/artifactory/hspe-edge-png-local/ubuntu-adl/20230127-2341/default/ubuntu-22.04.1-desktop-amd64-232-custom.qcow2"
      vm_image: "ubuntu-22.04.1-desktop-amd64-232-custom.qcow2"
+     image_distribution: ubuntu
+     gpu_sriov_func: {{ loop.index }}
      {% set vm_image="ubuntu-22.04.1-desktop-amd64-232-custom.qcow2" %}
 {% elif vm.image_distribution|lower == "windows" %}
   -  vm_image_url: "https://af01p-png.devtools.intel.com/artifactory/hspe-edge-png-local/common-vms/windows/ADLN_Windows_WW50_1.qcow2.bz2"
      vm_image: "ADLN_Windows_WW50_1.qcow2"
+     image_distribution: windows
+     gpu_sriov_func: {{ loop.index }}
      {% set vm_image="ADLN_Windows_WW50_1.qcow2" %}
 {% elif vm.image_distribution == "android" %}
   -  vm_image_url: "https://af01p-png.devtools.intel.com/artifactory/hspe-edge-png-local/common-vms/adln_android/android_ww2302.qcow2.bz2"
@@ -44,6 +48,10 @@ vms_links:
 {% endif %}
 {% endif %}
 {% endif %}
-vm_name: "{{vm.name}}"
+vm_name: {{vm.name}}
      vm_image_destination_file: "{{ vm_project_root_dir }}/{{vm_image}}"
+     cpu: {{ vm.cpu_total }}
+     memory: {{ vm.memory }}
+     virt_display: {{ vm.virt_display }}
+     hugepage_size: {{ hugepage_size }}
 {% endfor %}

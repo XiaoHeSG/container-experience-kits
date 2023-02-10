@@ -1,8 +1,35 @@
-- name: copy GPU SRIOV setup script to /usr/local/bin
-  copy:
-    src: "{{ role_path }}/files/cek_sriov_gpu_init"
-    dest: /usr/local/bin/cek_sriov_gpu_init
+##
+##   Copyright (c) 2020-2022 Intel Corporation.
+##
+##   Licensed under the Apache License, Version 2.0 (the "License");
+##   you may not use this file except in compliance with the License.
+##   You may obtain a copy of the License at
+##
+##       http://www.apache.org/licenses/LICENSE-2.0
+##
+##   Unless required by applicable law or agreed to in writing, software
+##   distributed under the License is distributed on an "AS IS" BASIS,
+##   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+##   See the License for the specific language governing permissions and
+##   limitations under the License.
+##
+## Initialize SR-IOV GPU:
+# ------------------------
+# create virtual functions, bring PF up & bind VFs drivers
+---
+- name: Add script for managing GPU SRIOV
+  template:
+    src: load_vfio_pci_sriov.sh.j2
+    dest: "{{ (project_root_dir, 'load_vfio_pci_sriov.sh') | path_join }}"
     owner: root
     group: root
-    mode: '0700'
-  become: yes
+    mode: '0744'
+
+- name: Run script
+  command: "{{ project_root_dir }}/load_vfio_pci_sriov.sh"
+  register: script_output
+  tags: sriov-gpu-setup
+
+- name: Print script output
+  debug: msg="script_output.stdout_lines"
+  tags: sriov-gpu-setup
