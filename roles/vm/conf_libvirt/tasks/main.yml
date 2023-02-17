@@ -27,6 +27,12 @@
     - ansible_facts['os_family'] == "Debian"
     - not sgx_dp_enabled | default(false)
 
+- name: Copy qemu.conf file
+  copy:
+    src: qemu.conf
+    dest: /etc/libvirt/qemu.conf
+    mode: '0644'
+
 # This task might not be needed as libvirt will use root group
 - name: Add root user to libvirt group
   user:
