@@ -24,6 +24,10 @@
 - name: check if {{ vm_link.vm_image_destination_file }} is already downloaded
   stat:
     path: "{{ vm_link.vm_image_destination_file }}"
+    get_checksum: no
+    get_md5: no
+    get_mime: no
+    get_attributes: no
   register: vm_image_downloaded
 
 - name: get download file full name
@@ -37,6 +41,10 @@
 - name: check if {{ vm_link.vm_image_destination_file }} is already downloaded
   stat:
     path: "{{ vm_link.vm_image_destination_file }}"
+    get_checksum: no
+    get_md5: no
+    get_mime: no
+    get_attributes: no
   register: vm_image_downloaded
 
 - block:
@@ -98,6 +106,10 @@
 - name: Register vm_image path
   stat:
     path: "{{ vm_project_root_dir }}/{{ vm_link.vm_image }}"
+    get_checksum: no
+    get_md5: no
+    get_mime: no
+    get_attributes: no
   register: img
 
 - name: Check that OS vm_image exists
